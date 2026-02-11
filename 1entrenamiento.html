@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RA GYM APP</title>
+    <style>
+        :root {
+            /* Colores RA GYM (Estilo Duolingo) */
+            --primary: #58cc02;
+            --primary-shadow: #46a302;
+            --bg: #131f24;
+            --card-bg: #202f36;
+            --text: #ffffff;
+            --text-muted: #777;
+            --border: #37464f;
+            --input-bg: #131f24;
+            --danger: #ff4b4b;
+            --danger-shadow: #d40000;
+            --accent: #1cb0f6;
+            --accent-shadow: #118ee6;
+            --history-text: #ffd900; /* Amarillo para resaltar el historial */
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 140px; /* Espacio extra para el footer grande */
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .brand {
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0px 2px 0px #000;
+        }
+
+        .streak-container {
+            display: flex;
+            align-items: center;
+            background: #202f36;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 2px solid #37464f;
+            font-weight: bold;
+            color: #ff9600;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        /* --- Barra de Progreso --- */
+        .progress-track {
+            background: var(--border);
+            height: 12px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- Botones Estilo Juego --- */
+        .btn-duo {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 15px;
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0px 5px 0px var(--primary-shadow);
+            transition: transform 0.1s, box-shadow 0.1s;
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
+
+        .btn-duo:active {
+            box-shadow: 0px 0px 0px var(--primary-shadow);
+            transform: translateY(5px);
+        }
+
+        .edit-mode-btn {
+            background-color: var(--accent);
+            box-shadow: 0px 4px 0px var(--accent-shadow);
+            width: auto;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 12px;
+        }
+        .edit-mode-btn:active {
+            box-shadow: 0px 0px 0px var(--accent-shadow);
+            transform: translateY(4px);
+        }
+
+        /* --- Select --- */
+        select {
+            width: 100%;
+            padding: 15px;
+            background: var(--card-bg);
+            color: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            outline: none;
+        }
+
+        /* --- Tarjetas --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 2px solid var(--border);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .ex-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            width: 70%;
+            line-height: 1.3;
+        }
+
+        .ex-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        /* --- Grilla de Sets e Historial --- */
+        .set-row {
+            display: grid;
+            grid-template-columns: 40px 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .set-badge {
+            background: var(--border);
+            color: var(--text-muted);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .workout-input {
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .workout-input:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        /* La etiqueta de Historial */
+        .history-tag {
+            font-size: 0.75rem;
+            color: var(--history-text);
+            margin-top: 4px;
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            opacity: 0.8;
+        }
+
+        /* --- Footer & Edit --- */
+        .card-footer {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .edit-input {
+            background: #000;
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 8px;
+            width: 100%;
+            margin-top: 5px;
+            border-radius: 8px;
+            display: none; 
+        }
+        .show-edit .edit-input { display: block; }
+        .show-edit .static-text { display: none; }
+        .show-edit .workout-input { opacity: 0.3; pointer-events: none; }
+        
+        .sticky-footer {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .info-pill {
+            background: rgba(255,255,255,0.05);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 0.85rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">RA GYM APP</div>
+        <div class="streak-container">
+            🔥 <span id="streakCount">0</span>
+        </div>
+    </header>
+
+    <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <span style="font-weight:bold; color:#fff;">Día de Entrenamiento</span>
+        <button class="btn-duo edit-mode-btn" onclick="toggleEditMode()">✏️ Editar</button>
+    </div>
+
+    <select id="daySelect" onchange="changeDay()">
+        <option value="dia1">Día 1: Upper Strength</option>
+        <option value="dia2">Día 2: Lower Strength</option>
+        <option value="dia3">Día 3: Pull Hypertrophy</option>
+        <option value="dia4">Día 4: Push Hypertrophy</option>
+        <option value="dia5">Día 5: Legs Hypertrophy</option>
+    </select>
+
+    <div id="container"></div>
+
+    <div class="sticky-footer">
+        <button class="btn-duo" onclick="finishAndSaveDay()">✅ Terminar y Guardar Progreso</button>
+    </div>
+
+<script>
+    // --- DATOS INICIALES (JEFF NIPPARD SEMANA 6) ---
+    const defaultData = {
+        dia1: [
+            { id: "d1e1", name: "45° Incline DB Press", sets: 2, repsTarget: "8-10", warmUp: "2-3 sets", video: "https://youtube.com", sub: "Barbell Press" },
+            { id: "d1e2", name: "Cable Crossover Ladder", sets: 2, repsTarget: "10-12", warmUp: "1-2 sets", video: "", sub: "Bottom-Half Flye" },
+            { id: "d1e3", name: "Pec Deck", sets: 2, repsTarget: "10-12", warmUp: "1-2 sets", video: "", sub: "N/A" },
+            { id: "d1e4", name: "Dual-Handle Lat Pulldown", sets: 2, repsTarget: "10-12", warmUp: "1-2 sets", video: "", sub: "Wide-Grip Pull-Up" },
+            { id: "d1e5", name: "High-Cable Lateral Raise", sets: 2, repsTarget: "10-12", warmUp: "1-2 sets", video: "", sub: "DB Lateral Raise" },
+            { id: "d1e6", name: "Smith Machine Row", sets: 2, repsTarget: "8-10", warmUp: "1-2 sets", video: "", sub: "Pendlay Row" },
+            { id: "d1e7", name: "Overhead Cable Triceps (Bar)", sets: 2, repsTarget: "10-12", warmUp: "1 set", video: "", sub: "Skull Crusher" },
+            { id: "d1e8", name: "Bayesian Cable Curl", sets: 2, repsTarget: "10-12", warmUp: "1 set", video: "", sub: "Incline DB Curl" }
+        ],
+        dia2: [
+            { id: "d2e1", name: "Lying Leg Curl", sets: 2, repsTarget: "10-12", warmUp: "2 sets", video: "", sub: "Seated Leg Curl" },
+            { id: "d2e2", name: "Smith Static Lunge (Elevated)", sets: 2, repsTarget: "8-10", warmUp: "2-4 sets", video: "", sub: "Split Squat" },
+            { id: "d2e3", name: "45° Hyperextension", sets: 2, repsTarget: "8-10", warmUp: "2-4 sets", video: "", sub: "Glute-Ham Raise" },
+            { id: "d2e4", name: "Leg Extension", sets: 2, repsTarget: "10-12", warmUp: "1-2 sets", video: "", sub: "Sissy Squat" },
+            { id: "d2e5", name: "Leg Press Calf Press", sets: 2, repsTarget: "8-10", warmUp: "1-2 sets", video: "", sub: "Seated Calf Raise" },
+            { id: "d2e6", name: "Machine Crunch", sets: 2, repsTarget: "10-12", warmUp: "1 set", video: "", sub: "Cable Crunch" }
+        ],
+        dia3: [
+            { id: "d3e1", name: "Chest-Supported T-Bar Row", sets: 2, repsTarget: "10-12", warmUp: "2-3 sets", video: "", sub: "Machine Row" },
+            { id: "d3e2", name: "Lean-Back Lat Pulldown", sets: 2, repsTarget: "10-12", warmUp: "2-3 sets", video: "", sub: "Pull-Up" },
+            { id: "d3e3", name: "Elbows-Out Cable Row", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Meadows Row" },
+            { id: "d3e4", name: "1-Arm 45 Cable Rear Delt", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Face Pull" },
+            { id: "d3e5", name: "Cable Paused Shrug-In", sets: 2, repsTarget: "12-15", warmUp: "2-3 sets", video: "", sub: "DB Shrug" },
+            { id: "d3e6", name: "Cable Rope Hammer Curl", sets: 2, repsTarget: "12-15", warmUp: "1 set", video: "", sub: "DB Hammer Curl" },
+            { id: "d3e7", name: "DB Concentration Curl", sets: 1, repsTarget: "15-20", warmUp: "None", video: "", sub: "Preacher Curl" }
+        ],
+        dia4: [
+            { id: "d4e1", name: "Seated DB Shoulder Press", sets: 2, repsTarget: "10-12", warmUp: "2-3 sets", video: "", sub: "Machine Press" },
+            { id: "d4e2", name: "Machine Chest Press", sets: 2, repsTarget: "10-12", warmUp: "2-4 sets", video: "", sub: "Bench Press" },
+            { id: "d4e3", name: "Bottom-Half Cable Flye", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "DB Flye" },
+            { id: "d4e4", name: "High-Cable Lateral Raise", sets: 2, repsTarget: "12-15", warmUp: "1 set", video: "", sub: "Lean-In Lateral" },
+            { id: "d4e5", name: "EZ-Bar Skull Crusher", sets: 2, repsTarget: "12-15", warmUp: "1 set", video: "", sub: "DB Skull Crusher" },
+            { id: "d4e6", name: "Triceps Pressdown (Bar)", sets: 1, repsTarget: "15-20", warmUp: "1 set", video: "", sub: "Rope Pressdown" },
+            { id: "d4e7", name: "Ab Wheel Rollout", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Plank" }
+        ],
+        dia5: [
+            { id: "d5e1", name: "Seated Leg Curl", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Lying Leg Curl" },
+            { id: "d5e2", name: "Hack Squat", sets: 2, repsTarget: "10-12", warmUp: "2-4 sets", video: "", sub: "Leg Press" },
+            { id: "d5e3", name: "Walking Lunge", sets: 2, repsTarget: "10-12", warmUp: "2-3 sets", video: "", sub: "Static Lunge" },
+            { id: "d5e4", name: "Leg Extension", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Sissy Squat" },
+            { id: "d5e5", name: "Machine Hip Adduction", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Copenhagen" },
+            { id: "d5e6", name: "Machine Hip Abduction", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Band Walk" },
+            { id: "d5e7", name: "Standing Calf Raise", sets: 2, repsTarget: "12-15", warmUp: "1-2 sets", video: "", sub: "Leg Press Calf" }
+        ]
+    };
+
+    // --- VARIABLES GLOBALES ---
+    let appData = JSON.parse(localStorage.getItem('ra_gym_data')) || defaultData;
+    let logs = JSON.parse(localStorage.getItem('ra_gym_logs')) || {}; // Lo que escribes HOY
+    let history = JSON.parse(localStorage.getItem('ra_gym_history')) || {}; // Lo que escribiste AYER (Para comparar)
+    let streakData = JSON.parse(localStorage.getItem('ra_gym_streak')) || { count: 0, lastDate: null };
+    let isEditMode = false;
+
+    // Iniciar
+    updateStreakDisplay();
+    render();
+
+    // --- FUNCIONES PRINCIPALES ---
+
+    function saveRoutine() {
+        localStorage.setItem('ra_gym_data', JSON.stringify(appData));
+        render();
+    }
+
+    function saveLog(exId, setNum, field, value) {
+        if (!logs[exId]) logs[exId] = {};
+        if (!logs[exId][setNum]) logs[exId][setNum] = {};
+        
+        logs[exId][setNum][field] = value;
+        localStorage.setItem('ra_gym_logs', JSON.stringify(logs));
+        updateProgressBar();
+    }
+
+    // --- EL BOTÓN MÁGICO "TERMINAR Y GUARDAR" ---
+    function finishAndSaveDay() {
+        const day = document.getElementById('daySelect').value;
+        const today = new Date().toDateString();
+
+        if (confirm("¿Terminar entrenamiento? Esto guardará tus números de hoy en el HISTORIAL y limpiará las casillas para la próxima semana.")) {
+            
+            // 1. Guardar LOGS actuales en HISTORY
+            appData[day].forEach(ex => {
+                if(logs[ex.id]) {
+                    // Si no existe entrada en history, crearla
+                    if (!history[ex.id]) history[ex.id] = {};
+                    
+                    // Copiar sets
+                    for(let i=1; i<=ex.sets; i++) {
+                        if(logs[ex.id][i]) {
+                            history[ex.id][i] = logs[ex.id][i];
+                        }
+                    }
+                    // Borrar log actual para dejar limpio
+                    delete logs[ex.id];
+                }
+            });
+
+            // 2. Persistir cambios
+            localStorage.setItem('ra_gym_history', JSON.stringify(history));
+            localStorage.setItem('ra_gym_logs', JSON.stringify(logs));
+
+            // 3. Manejar Racha (Streak)
+            if (streakData.lastDate !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                if (streakData.lastDate === yesterday.toDateString()) {
+                    streakData.count++;
+                } else {
+                    streakData.count = 1;
+                }
+                streakData.lastDate = today;
+                localStorage.setItem('ra_gym_streak', JSON.stringify(streakData));
+            }
+
+            // 4. UI Feedback
+            alert("✅ ¡Entrenamiento Guardado! Tus números de hoy serán la referencia para la próxima semana.");
+            updateStreakDisplay();
+            render();
+            window.scrollTo(0,0);
+        }
+    }
+
+    // --- RENDERIZADO ---
+    function render() {
+        const day = document.getElementById('daySelect').value;
+        const container = document.getElementById('container');
+        container.innerHTML = '';
+
+        appData[day].forEach((ex, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            let setsHtml = '';
+            for(let i=1; i <= ex.sets; i++) {
+                const savedWeight = logs[ex.id]?.[i]?.weight || '';
+                const savedReps = logs[ex.id]?.[i]?.reps || '';
+
+                // OBTENER HISTORIAL (PROGRESIÓN)
+                const lastSession = history[ex.id]?.[i];
+                let historyText = "---";
+                if(lastSession && (lastSession.weight || lastSession.reps)) {
+                    historyText = `⏮️ ${lastSession.weight || 0}kg x ${lastSession.reps || 0}`;
+                }
+
+                setsHtml += `
+                <div class="set-row">
+                    <div class="set-badge">${i}</div>
+                    
+                    <div class="input-group">
+                        <input type="number" class="workout-input" placeholder="kg" 
+                            value="${savedWeight}" 
+                            oninput="saveLog('${ex.id}', ${i}, 'weight', this.value)">
+                        <div class="history-tag">${historyText}</div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="number" class="workout-input" placeholder="reps" 
+                            value="${savedReps}" 
+                            oninput="saveLog('${ex.id}', ${i}, 'reps', this.value)">
+                        <div class="history-tag">Objetivo: ${ex.repsTarget}</div>
+                    </div>
+                </div>`;
+            }
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="ex-title">
+                        <span class="static-text">${ex.name}</span>
+                        <input class="edit-input" value="${ex.name}" onchange="updateRoutineField('${day}', ${index}, 'name', this.value)">
+                    </div>
+                    <div class="ex-meta">
+                        <span class="static-text">${ex.sets} Sets</span>
+                        <input class="edit-input" type="number" placeholder="Sets" value="${ex.sets}" onchange="updateRoutineField('${day}', ${index}, 'sets', Number(this.value))">
+                    </div>
+                </div>
+
+                <div class="sets-container">
+                    ${setsHtml}
+                </div>
+
+                <div class="card-footer">
+                    <div class="info-pill">🔥 ${ex.warmUp}</div>
+                    <div class="info-pill" style="border: 1px solid var(--accent); color: var(--accent);">🔄 ${ex.sub}</div>
+                    
+                    <input class="edit-input" placeholder="Calentamiento" value="${ex.warmUp}" onchange="updateRoutineField('${day}', ${index}, 'warmUp', this.value)">
+                    <input class="edit-input" placeholder="Sustituto" value="${ex.sub}" onchange="updateRoutineField('${day}', ${index}, 'sub', this.value)">
+                    
+                    <div style="margin-top:5px">
+                        <a href="${ex.video || '#'}" target="_blank" style="color:#4fc3f7; text-decoration:none; font-weight:bold; font-size:0.85rem">📺 Ver Video</a>
+                        <input class="edit-input" placeholder="URL Video" value="${ex.video}" onchange="updateRoutineField('${day}', ${index}, 'video', this.value)">
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+        
+        if(isEditMode) document.body.classList.add('show-edit');
+        else document.body.classList.remove('show-edit');
+        
+        updateProgressBar();
+    }
+
+    // --- UTILIDADES ---
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        document.querySelector('.edit-mode-btn').textContent = isEditMode ? "Guardar" : "✏️ Editar";
+        render(); // Re-render para mostrar inputs
+    }
+
+    function changeDay() { render(); }
+
+    function updateRoutineField(day, exIndex, field, value) {
+        appData[day][exIndex][field] = value;
+        saveRoutine();
+    }
+
+    function updateStreakDisplay() {
+        document.getElementById('streakCount').textContent = streakData.count;
+    }
+
+    function updateProgressBar() {
+        const day = document.getElementById('daySelect').value;
+        const exercises = appData[day];
+        let totalSets = 0;
+        let completedSets = 0;
+
+        exercises.forEach(ex => {
+            totalSets += ex.sets;
+            for(let i=1; i<=ex.sets; i++) {
+                if (logs[ex.id] && logs[ex.id][i] && (logs[ex.id][i].weight || logs[ex.id][i].reps)) {
+                    completedSets++;
+                }
+            }
+        });
+        const percent = totalSets === 0 ? 0 : (completedSets / totalSets) * 100;
+        document.getElementById('progressBar').style.width = percent + "%";
+    }
+
+</script>
+
+</body>
+</html>
